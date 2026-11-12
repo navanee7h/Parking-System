@@ -1,4 +1,5 @@
 {
+  "format": "grid",
   "name": "City Mall - Basement P1",
   "cell_meters": 2.5,
   "legend": {
@@ -20,9 +21,21 @@
     "######################"
   ],
   "points": {
-    "G": {"id": "GATE", "name": "Vehicle entry gate", "kind": "gate"},
-    "1": {"id": "K1", "name": "Mall entrance - Lift lobby", "kind": "kiosk"},
-    "2": {"id": "K2", "name": "Mall entrance - Escalator", "kind": "kiosk"}
+    "G": {
+      "id": "GATE",
+      "name": "Vehicle entry gate",
+      "kind": "gate"
+    },
+    "1": {
+      "id": "K1",
+      "name": "Mall entrance - Lift lobby",
+      "kind": "kiosk"
+    },
+    "2": {
+      "id": "K2",
+      "name": "Mall entrance - Escalator",
+      "kind": "kiosk"
+    }
   },
   "cameras": [
     {
@@ -31,8 +44,42 @@
       "sample_every_s": 2.0,
       "reference_image": "config/reference/CAM-A-WEST.jpg",
       "slots": {
-        "A01": [[40, 300], [180, 300], [170, 460], [20, 460]],
-        "A02": [[190, 300], [330, 300], [330, 460], [180, 460]]
+        "A01": [
+          [
+            40,
+            300
+          ],
+          [
+            180,
+            300
+          ],
+          [
+            170,
+            460
+          ],
+          [
+            20,
+            460
+          ]
+        ],
+        "A02": [
+          [
+            190,
+            300
+          ],
+          [
+            330,
+            300
+          ],
+          [
+            330,
+            460
+          ],
+          [
+            180,
+            460
+          ]
+        ]
       }
     }
   ]

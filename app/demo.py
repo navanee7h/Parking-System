@@ -28,16 +28,24 @@ def hide_some(plate: str, rng: random.Random) -> str:
     return plate[:-3] + "???"  # right part hidden
 
 
+def demo_plates(lot: Lot) -> dict[str, str]:
+    """A few fixed cars so the README examples always work."""
+    ids = list(lot.slots)
+    return {ids[4]: "KA05MH1234", ids[len(ids) // 2]: "TN09AB4521", ids[-10]: "KL07?Z88?1"}
+
+
 def seed(store: Store, lot: Lot, fill: float = 0.6, seed_value: int = 7) -> list[tuple[str, str]]:
     rng = random.Random(seed_value)
     seeded = []
-    fixed = {"A05": "KA05MH1234", "C11": "TN09AB4521", "D17": "KL07?Z88?1"}
+    fixed = demo_plates(lot)
     for sid in lot.slots:
         if sid in fixed or rng.random() < fill:
             plate = fixed.get(sid) or random_plate(rng)
             conf = 0.95
             if sid not in fixed and rng.random() < 0.2:
                 plate, conf = hide_some(plate, rng), 0.55
+            elif sid in fixed and "?" in plate:
+                conf = 0.55
             store.set_occupancy(sid, True, "DEMO")
             store.set_plate(sid, plate, conf, "DEMO")
             seeded.append((sid, plate))

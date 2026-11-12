@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -15,7 +15,8 @@ from .db import Store
 from .lot import load_lot
 
 ROOT = Path(__file__).resolve().parent.parent
-LOT = load_lot(os.getenv("PARKING_LOT_CONFIG", ROOT / "config" / "lot.json"))
+LOT = load_lot(os.getenv("PARKING_LOT_CONFIG", ROOT / "config" / "ps1" / "lot.json"))
+ROUTER = navigation.Router(LOT)
 API_KEY = os.getenv("PARKING_API_KEY", "dev-key")
 store = Store(os.getenv("PARKING_DB", str(ROOT / "parking.db")))
 
@@ -23,7 +24,7 @@ store = Store(os.getenv("PARKING_DB", str(ROOT / "parking.db")))
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     store.ensure_slots(LOT.slots)
-    if os.getenv("PARKING_DEMO", "1") == "1" and store.is_empty():
+    if os.getenv("PARKING_DEMO", "1") == "1" and store.is_empty(LOT.slots):
         demo.seed(store, LOT)
     yield
 
@@ -38,49 +39,63 @@ def get_lot():
     return LOT.to_dict()
 
 
+@app.get("/api/floors/{floor_id}")
+def get_floor_drawing(floor_id: str, response: Response):
+    if floor_id not in LOT.floors:
+        raise HTTPException(404, f"unknown floor {floor_id}")
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return LOT.floors[floor_id].drawing
+
+
 @app.get("/api/slots")
 def get_slots():
     rows = store.slots()
-    free = [r["slot_id"] for r in rows if not r["occupied"]]
+    per_floor: dict[str, dict] = {f: {"free": 0, "total": 0} for f in LOT.floors}
+    for r in rows:
+        f = LOT.slots[r["slot_id"]].floor if r["slot_id"] in LOT.slots else None
+        if f:
+            per_floor[f]["total"] += 1
+            per_floor[f]["free"] += 0 if r["occupied"] else 1
+    free = sum(v["free"] for v in per_floor.values())
+    total = sum(v["total"] for v in per_floor.values())
     # never expose plates on the public status endpoint
     return {
-        "total": len(rows), "free": len(free), "occupied": len(rows) - len(free),
-        "slots": [{"slot_id": r["slot_id"], "occupied": bool(r["occupied"])} for r in rows],
+        "total": total, "free": free, "occupied": total - free, "floors": per_floor,
+        "slots": [{"slot_id": r["slot_id"], "occupied": bool(r["occupied"])}
+                  for r in rows if r["slot_id"] in LOT.slots],
     }
 
 
 @app.get("/api/search")
 def search(q: str = Query(..., min_length=1, max_length=20), limit: int = Query(5, ge=1, le=10)):
-    matches = plate_matcher.search(q, store.vehicles(), limit=limit)
-    return {
-        "query": plate_matcher.normalize(q),
-        "exact": bool(matches and matches[0].exact),
-        "results": [m.__dict__ for m in matches],
-    }
+    vehicles = [v for v in store.vehicles() if v["slot_id"] in LOT.slots]
+    matches = plate_matcher.search(q, vehicles, limit=limit)
+    results = []
+    for m in matches:
+        floor = LOT.floors[LOT.slots[m.slot_id].floor]
+        results.append({**m.__dict__, "floor": floor.id, "floor_name": floor.name})
+    return {"query": plate_matcher.normalize(q), "exact": bool(matches and matches[0].exact),
+            "results": results}
 
 
 @app.get("/api/route")
-def get_route(slot: str, from_: str = Query("K1", alias="from")):
+def get_route(slot: str, from_: str = Query(..., alias="from"), lifts_only: bool = False):
     if slot not in LOT.slots:
         raise HTTPException(404, f"unknown slot {slot}")
     if from_ not in LOT.points:
         raise HTTPException(404, f"unknown location {from_}")
-    return navigation.route(LOT, from_, slot)
+    try:
+        return ROUTER.route(from_, slot, lifts_only=lifts_only)
+    except ValueError as e:
+        raise HTTPException(409, str(e))
 
 
 @app.get("/api/nearest-free")
-def nearest_free(from_: str = Query("GATE", alias="from")):
+def nearest_free(from_: str = Query(..., alias="from")):
     if from_ not in LOT.points:
         raise HTTPException(404, f"unknown location {from_}")
-    free = [r["slot_id"] for r in store.slots() if not r["occupied"]]
-    best = None
-    for sid in free:
-        try:
-            r = navigation.route(LOT, from_, sid)
-        except ValueError:
-            continue
-        if best is None or r["distance_m"] < best["distance_m"]:
-            best = r
+    free = [r["slot_id"] for r in store.slots() if not r["occupied"] and r["slot_id"] in LOT.slots]
+    best = ROUTER.nearest_free(from_, free)
     if best is None:
         raise HTTPException(404, "parking is full")
     return best

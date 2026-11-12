@@ -7,15 +7,16 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<main>
+<main style="max-width:1100px">
   <h1 id="lot-name">Parking availability</h1>
   <p class="sub">Live from CCTV · refreshes every 5 seconds</p>
   <div class="card stats">
     <div class="stat"><span class="sub">Free</span><b id="free" style="color:var(--free)">–</b></div>
     <div class="stat"><span class="sub">Occupied</span><b id="occ">–</b></div>
-    <div class="stat"><span class="sub">Nearest free</span><b id="nearest">–</b></div>
+    <div class="stat"><span class="sub">Nearest free from <span id="from-name"></span></span><b id="nearest">–</b></div>
   </div>
   <div class="card">
+    <div class="tabs" role="tablist" id="tabs"></div>
     <div class="map-wrap"><svg id="map" role="img" aria-label="Map of free and occupied slots"></svg></div>
     <div class="legend">
       <span><i style="background:var(--free)"></i>Free</span>
@@ -25,21 +26,46 @@
   </div>
 </main>
 <script type="module">
-  import { renderMap } from "/static/map.js";
-  const from = new URLSearchParams(location.search).get("from") || "GATE";
+  import { renderFloor } from "/static/map.js";
   const lot = await (await fetch("/api/lot")).json();
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from") || (lot.points.find(p => p.kind === "gate") || lot.points[0]).id;
+  const fromPoint = lot.points.find(p => p.id === from);
+  let floor = params.get("floor") || fromPoint.floor;
   document.getElementById("lot-name").textContent = lot.name;
+  document.getElementById("from-name").textContent = fromPoint.name;
+  let last = null;
+
+  function tabs(s) {
+    document.getElementById("tabs").innerHTML = lot.floors.map(f =>
+      `<button role="tab" aria-selected="${f.id === floor}" data-f="${f.id}">${f.name}
+        <small>· ${s.floors[f.id]?.free ?? 0} free</small></button>`).join("");
+    document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => { floor = b.dataset.f; draw(); });
+  }
+
+  async function draw() {
+    if (!last) return;
+    const { s, route } = last;
+    tabs(s);
+    const status = Object.fromEntries(s.slots.map(x => [x.slot_id, x.occupied]));
+    const leg = route?.legs?.find(l => l.floor === floor);
+    await renderFloor(document.getElementById("map"), lot, floor, status, {
+      from: fromPoint.floor === floor ? from : null,
+      highlight: route?.floor === floor ? route.slot : null,
+      path: leg?.path, zoom: "floor" });
+  }
+
   async function tick() {
     const s = await (await fetch("/api/slots")).json();
     document.getElementById("free").textContent = s.free;
     document.getElementById("occ").textContent = s.occupied;
-    const status = Object.fromEntries(s.slots.map(x => [x.slot_id, x.occupied]));
-    let route = null;
-    const r = await fetch(`/api/nearest-free?from=${from}`);
-    if (r.ok) route = await r.json();
-    document.getElementById("nearest").textContent = route ? route.slot : "Full";
-    renderMap(document.getElementById("map"), lot, status,
-      { from, highlight: route?.slot, path: route?.path });
+    const r = await fetch(`/api/nearest-free?from=${encodeURIComponent(from)}`);
+    const route = r.ok ? await r.json() : null;
+    const fname = route && lot.floors.find(f => f.id === route.floor).name;
+    document.getElementById("nearest").textContent = route ? `${route.slot}` : "Full";
+    document.getElementById("nearest").title = fname || "";
+    last = { s, route };
+    await draw();
   }
   tick(); setInterval(tick, 5000);
 </script>

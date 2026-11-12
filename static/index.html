@@ -9,11 +9,12 @@
 <body>
 <main>
   <h1>Find my car</h1>
-  <p class="sub" id="where">Type your number plate and we'll show you the way.</p>
+  <p class="sub" id="lot-name"></p>
 
-  <div class="card" id="location-card" hidden>
-    <label for="from">Where are you now?</label>
+  <div class="card">
+    <label for="from">You are at</label>
     <select id="from"></select>
+    <label class="check"><input type="checkbox" id="lifts-only"> Use lifts only (wheelchair, pram, luggage)</label>
   </div>
 
   <div class="card">
@@ -25,17 +26,19 @@
   </div>
 
   <div class="card hidden" id="result">
-    <h2 style="margin:0 0 4px;font-size:1.2rem">Slot <span id="slot"></span></h2>
-    <div class="sub" style="margin:0 0 12px" id="summary"></div>
-    <div class="map-wrap"><svg id="map" role="img" aria-label="Parking map with route to your car"></svg></div>
+    <h2 style="margin:0 0 4px;font-size:1.2rem" id="title"></h2>
+    <div class="sub" style="margin:0" id="summary"></div>
+    <div class="warn hidden" id="partial-warn"></div>
+    <div id="maps"></div>
     <div class="legend">
       <span><i style="background:var(--mine)"></i>Your car</span>
       <span><i style="background:var(--free)"></i>Free</span>
       <span><i style="background:var(--occupied)"></i>Occupied</span>
       <span><i style="background:var(--accent)"></i>You</span>
+      <span><i style="background:var(--path)"></i>Route</span>
     </div>
+    <h3 style="margin:16px 0 0;font-size:1rem">Directions</h3>
     <ol class="steps" id="steps"></ol>
-    <div class="warn hidden" id="partial-warn"></div>
   </div>
 </main>
 <script type="module" src="/static/find.js"></script>

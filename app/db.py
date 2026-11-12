@@ -81,6 +81,9 @@ class Store:
             return [dict(r) for r in self._conn.execute(
                 "SELECT slot_id, plate, plate_conf, updated_at FROM slots WHERE plate IS NOT NULL")]
 
-    def is_empty(self) -> bool:
+    def is_empty(self, slot_ids=None) -> bool:
+        """No occupied slots (optionally: none among `slot_ids`, i.e. the current lot)."""
         with self._lock:
-            return self._conn.execute("SELECT COUNT(*) FROM slots WHERE occupied=1").fetchone()[0] == 0
+            rows = self._conn.execute("SELECT slot_id FROM slots WHERE occupied=1").fetchall()
+        ids = set(slot_ids) if slot_ids is not None else None
+        return not any(ids is None or r["slot_id"] in ids for r in rows)

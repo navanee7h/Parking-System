@@ -1,13 +1,15 @@
 :root {
   --bg: #f6f7f9; --surface: #ffffff; --text: #16191d; --muted: #5f6873; --border: #dde1e6;
   --accent: #1f6feb; --accent-text: #ffffff; --free: #2e9d5b; --occupied: #c9ced6;
-  --mine: #e8590c; --wall: #3a4250; --floor: #eef0f3; --path: #1f6feb; --warn-bg: #fff4e5; --warn: #8a4b00;
+  --mine: #e8590c; --wall: #3a4250; --floor: #ffffff; --path: #1f6feb; --warn-bg: #fff4e5; --warn: #8a4b00;
+  --plan-line: #4a5260; --plan-faint: #9aa1ab; --plan-accent: #d93025; --plan-text: #6b7480; --slot-text: #1d2b20;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0f1216; --surface: #181c22; --text: #e8eaed; --muted: #9aa3ad; --border: #2b313a;
     --accent: #4c8dff; --free: #3fbf73; --occupied: #3a414c; --mine: #ff7a33; --wall: #59647a;
-    --floor: #1e232b; --path: #6aa2ff; --warn-bg: #3a2a12; --warn: #ffc27a;
+    --floor: #12161b; --path: #6aa2ff; --warn-bg: #3a2a12; --warn: #ffc27a;
+    --plan-line: #8b95a5; --plan-faint: #545d6b; --plan-accent: #ff6b5e; --plan-text: #8b95a5; --slot-text: #0b1a10;
   }
 }
 * { box-sizing: border-box; }
@@ -43,3 +45,17 @@ ol.steps li { margin-bottom: 6px; }
 .hidden { display: none; }
 @keyframes dash { to { stroke-dashoffset: -20; } }
 .route-line { animation: dash 0.8s linear infinite; }
+.map-wrap { border: 1px solid var(--border); border-radius: 8px; background: var(--floor); }
+.map-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 16px 0 8px; }
+.map-head h3 { margin: 0; font-size: 1rem; }
+.btn { font: inherit; font-size: .875rem; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.tabs button { font: inherit; font-size: .9rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.tabs small { opacity: .8; }
+.check { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-top: 12px; }
+.check input { width: auto; }
+.step-hop { font-weight: 700; }

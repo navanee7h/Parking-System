@@ -78,7 +78,7 @@ def run(server: str, cam: dict, reader) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default="http://localhost:8000")
-    ap.add_argument("--config", default="config/lot.json")
+    ap.add_argument("--config", default="config/ps1/lot.json")
     ap.add_argument("--camera", required=True, help="camera id from config")
     ap.add_argument("--no-ocr", action="store_true", help="occupancy only")
     args = ap.parse_args()
