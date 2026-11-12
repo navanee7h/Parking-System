@@ -30,8 +30,8 @@ Find your car in a mall car park using the CCTV cameras that are already there.
 ## Quick start (demo mode, no cameras needed)
 
 ```bash
-pip install -r requirements-dev.txt
-uvicorn app.main:app --reload
+python -m pip install -r requirements-dev.txt
+python -m uvicorn app.main:app --reload
 ```
 
 - Find-my-car page: <http://localhost:8000/?kiosk=K1>  (try `KA05MH1234`, `4521`, `KL07AZ8851`)
@@ -40,10 +40,12 @@ uvicorn app.main:app --reload
 Demo mode (`PARKING_DEMO=1`, the default) fills the empty lot with fake cars, some with
 partly-read plates. Set `PARKING_DEMO=0` in production.
 
+(On Windows, using `python -m ...` avoids "uvicorn is not recognized" when pip's Scripts folder isn't on PATH.)
+
 Run the tests:
 
 ```bash
-pytest -q
+python -m pytest -q
 ```
 
 ## Setting it up for a real car park
