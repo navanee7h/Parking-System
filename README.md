@@ -2,6 +2,8 @@
 
 Find your car in a mall car park using the CCTV cameras that are already there.
 
+<img src="docs/find-my-car.png" width="320" alt="Find-my-car page showing a partial plate suggestion, map route and directions">
+
 1. **CCTV cameras** watch the parking slots. For every slot the system works out whether it is
    **occupied or free**, and reads the **number plate** of the car parked in it.
 2. A visitor coming back from the mall **scans the QR code** at the entrance. The QR tells the
