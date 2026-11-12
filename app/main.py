@@ -1,11 +1,12 @@
 """FastAPI server: car finder, live availability and camera ingestion."""
 from __future__ import annotations
 
+import mimetypes
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException, Query, Response
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -142,6 +143,23 @@ def ingest_plate(body: PlateIn, x_api_key: str | None = Header(None)):
 
 
 # ---------- pages ----------
+
+# Windows can map .js to text/plain in the registry; browsers then refuse to run the page scripts
+mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
+
+
+@app.middleware("http")
+async def no_stale_pages(request: Request, call_next):
+    """Make browsers re-check pages/scripts so an update never mixes old and new files."""
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/static/") or path in ("/", "/board"):
+        response.headers["Cache-Control"] = "no-cache"
+    if path.endswith(".js"):
+        response.headers["Content-Type"] = "text/javascript; charset=utf-8"
+    return response
+
 
 STATIC = ROOT / "static"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")

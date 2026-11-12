@@ -25,8 +25,19 @@
     </div>
   </div>
 </main>
+<div id="load-error" class="warn hidden" role="alert"></div>
+<script>
+  // shows a message instead of a blank page if the scripts fail to load
+  function showLoadError(msg) {
+    var el = document.getElementById("load-error");
+    el.textContent = "The map could not load: " + msg + " — try a hard refresh (Ctrl+Shift+R).";
+    el.classList.remove("hidden");
+  }
+  window.addEventListener("error", function (e) { showLoadError(e.message || "script error"); });
+  window.addEventListener("unhandledrejection", function (e) { showLoadError(String(e.reason && e.reason.message || e.reason)); });
+</script>
 <script type="module">
-  import { renderFloor } from "/static/map.js";
+  import { renderFloor } from "/static/map.js?v=2";
   const lot = await (await fetch("/api/lot")).json();
   const params = new URLSearchParams(location.search);
   const from = params.get("from") || (lot.points.find(p => p.kind === "gate") || lot.points[0]).id;

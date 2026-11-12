@@ -59,3 +59,4 @@ ol.steps li { margin-bottom: 6px; }
 .check { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-top: 12px; }
 .check input { width: auto; }
 .step-hop { font-weight: 700; }
+#load-error { position: fixed; top: 8px; left: 16px; right: 16px; z-index: 10; margin: 0; }

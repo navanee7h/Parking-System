@@ -8,6 +8,7 @@
 </head>
 <body>
 <main>
+  
   <h1>Find my car</h1>
   <p class="sub" id="lot-name"></p>
 
@@ -23,6 +24,16 @@
            placeholder="e.g. KA05MH1234" maxlength="16" inputmode="text">
     <div class="hint">Don't remember all of it? Type the part you know, e.g. <b>1234</b> or <b>KA05</b>.</div>
     <ul class="suggestions" id="suggestions" aria-live="polite"></ul>
+  </div>
+
+  <div class="card" id="preview">
+    <div class="map-head" style="margin-top:0"><h3 id="preview-title">Map</h3></div>
+    <div class="map-wrap"><svg id="preview-map" role="img" aria-label="Map of the floor you are on"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--free)"></i>Free</span>
+      <span><i style="background:var(--occupied)"></i>Occupied</span>
+      <span><i style="background:var(--accent)"></i>You</span>
+    </div>
   </div>
 
   <div class="card hidden" id="result">
@@ -41,6 +52,17 @@
     <ol class="steps" id="steps"></ol>
   </div>
 </main>
-<script type="module" src="/static/find.js"></script>
+<div id="load-error" class="warn hidden" role="alert"></div>
+<script>
+  // shows a message instead of a blank page if the scripts fail to load
+  function showLoadError(msg) {
+    var el = document.getElementById("load-error");
+    el.textContent = "The map could not load: " + msg + " — try a hard refresh (Ctrl+Shift+R).";
+    el.classList.remove("hidden");
+  }
+  window.addEventListener("error", function (e) { showLoadError(e.message || "script error"); });
+  window.addEventListener("unhandledrejection", function (e) { showLoadError(String(e.reason && e.reason.message || e.reason)); });
+</script>
+<script type="module" src="/static/find.js?v=2" onerror="showLoadError('find.js did not load')"></script>
 </body>
 </html>

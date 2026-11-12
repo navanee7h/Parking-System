@@ -1,4 +1,4 @@
-import { renderFloor, plateHtml } from "/static/map.js";
+import { renderFloor, plateHtml } from "/static/map.js?v=2";
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -24,9 +24,18 @@ async function init() {
       .map(p => `<option value="${p.id}">${p.name}</option>`).join("") + `</optgroup>`).join("");
   const wanted = params.get("kiosk") || params.get("from");
   if (lot.points.some(p => p.id === wanted)) $("from").value = wanted;
-  $("from").onchange = $("lifts-only").onchange = () => lastMatch && showRoute(lastMatch);
+  $("from").onchange = $("lifts-only").onchange = () => { showPreview(); if (lastMatch) showRoute(lastMatch); };
   const s = await getJSON("/api/slots");
   status = Object.fromEntries(s.slots.map(x => [x.slot_id, x.occupied]));
+  await showPreview();
+}
+
+// before a car is chosen: the visitor's floor, with "You are here"
+async function showPreview() {
+  const p = lot.points.find(x => x.id === $("from").value);
+  if (!p) return;
+  $("preview-title").textContent = `${floorName(p.floor)} – you are at ${p.id}`;
+  await renderFloor($("preview-map"), lot, p.floor, status, { from: p.id, zoom: "floor" });
 }
 
 let timer;
@@ -72,6 +81,7 @@ async function showRoute(match) {
     return;
   }
   $("result").classList.remove("hidden");
+  $("preview").classList.add("hidden");
   $("title").textContent = `${match.floor_name} · Slot ${match.slot_id}`;
   $("summary").innerHTML = `<span class="plate">${plateHtml(match.plate)}</span> · about ${Math.round(r.distance_m)} m walk`;
   $("steps").innerHTML = r.steps.map(s => `<li class="${/^Take (lift|stairs)/.test(s) ? "step-hop" : ""}">${s}</li>`).join("");
@@ -111,4 +121,4 @@ async function showRoute(match) {
   $("result").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-init().catch(e => { $("lot-name").textContent = "Could not load the parking map: " + e.message; });
+init().catch(e => showLoadError(e.message));
