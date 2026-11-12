@@ -1,0 +1,7 @@
+fastapi>=0.110
+uvicorn>=0.29
+numpy>=1.26
+opencv-python-headless>=4.9
+qrcode[pil]>=7.4
+# Plate OCR for the camera worker (large download, only needed where cameras are processed):
+# easyocr>=1.7

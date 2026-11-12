@@ -1,0 +1,39 @@
+{
+  "name": "City Mall - Basement P1",
+  "cell_meters": 2.5,
+  "legend": {
+    "#": "wall",
+    ".": "driveway / walkway",
+    "A-Z": "parking slot; id = letter + position in that row, left to right (A01, A02, ...)",
+    "G, 1-9": "named points (vehicle gate, QR kiosks) - see 'points'"
+  },
+  "grid": [
+    "######################",
+    "#AAAAAAAAAAAAAAAAAAAA#",
+    "G....................1",
+    "#....................#",
+    "#.BBBBBBBBBBBBBBBBBB.#",
+    "#.CCCCCCCCCCCCCCCCCC.#",
+    "#....................#",
+    "#....................2",
+    "#DDDDDDDDDDDDDDDDDDDD#",
+    "######################"
+  ],
+  "points": {
+    "G": {"id": "GATE", "name": "Vehicle entry gate", "kind": "gate"},
+    "1": {"id": "K1", "name": "Mall entrance - Lift lobby", "kind": "kiosk"},
+    "2": {"id": "K2", "name": "Mall entrance - Escalator", "kind": "kiosk"}
+  },
+  "cameras": [
+    {
+      "id": "CAM-A-WEST",
+      "source": "rtsp://user:pass@192.168.1.21:554/stream1",
+      "sample_every_s": 2.0,
+      "reference_image": "config/reference/CAM-A-WEST.jpg",
+      "slots": {
+        "A01": [[40, 300], [180, 300], [170, 460], [20, 460]],
+        "A02": [[190, 300], [330, 300], [330, 460], [180, 460]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find My Car</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <h1>Find my car</h1>
+  <p class="sub" id="where">Type your number plate and we'll show you the way.</p>
+
+  <div class="card" id="location-card" hidden>
+    <label for="from">Where are you now?</label>
+    <select id="from"></select>
+  </div>
+
+  <div class="card">
+    <label for="plate">Number plate</label>
+    <input id="plate" autocomplete="off" autocapitalize="characters" spellcheck="false"
+           placeholder="e.g. KA05MH1234" maxlength="16" inputmode="text">
+    <div class="hint">Don't remember all of it? Type the part you know, e.g. <b>1234</b> or <b>KA05</b>.</div>
+    <ul class="suggestions" id="suggestions" aria-live="polite"></ul>
+  </div>
+
+  <div class="card hidden" id="result">
+    <h2 style="margin:0 0 4px;font-size:1.2rem">Slot <span id="slot"></span></h2>
+    <div class="sub" style="margin:0 0 12px" id="summary"></div>
+    <div class="map-wrap"><svg id="map" role="img" aria-label="Parking map with route to your car"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--mine)"></i>Your car</span>
+      <span><i style="background:var(--free)"></i>Free</span>
+      <span><i style="background:var(--occupied)"></i>Occupied</span>
+      <span><i style="background:var(--accent)"></i>You</span>
+    </div>
+    <ol class="steps" id="steps"></ol>
+    <div class="warn hidden" id="partial-warn"></div>
+  </div>
+</main>
+<script type="module" src="/static/find.js"></script>
+</body>
+</html>

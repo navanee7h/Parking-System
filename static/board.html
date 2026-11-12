@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parking Availability</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <h1 id="lot-name">Parking availability</h1>
+  <p class="sub">Live from CCTV · refreshes every 5 seconds</p>
+  <div class="card stats">
+    <div class="stat"><span class="sub">Free</span><b id="free" style="color:var(--free)">–</b></div>
+    <div class="stat"><span class="sub">Occupied</span><b id="occ">–</b></div>
+    <div class="stat"><span class="sub">Nearest free</span><b id="nearest">–</b></div>
+  </div>
+  <div class="card">
+    <div class="map-wrap"><svg id="map" role="img" aria-label="Map of free and occupied slots"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--free)"></i>Free</span>
+      <span><i style="background:var(--occupied)"></i>Occupied</span>
+      <span><i style="background:var(--mine)"></i>Nearest free slot</span>
+    </div>
+  </div>
+</main>
+<script type="module">
+  import { renderMap } from "/static/map.js";
+  const from = new URLSearchParams(location.search).get("from") || "GATE";
+  const lot = await (await fetch("/api/lot")).json();
+  document.getElementById("lot-name").textContent = lot.name;
+  async function tick() {
+    const s = await (await fetch("/api/slots")).json();
+    document.getElementById("free").textContent = s.free;
+    document.getElementById("occ").textContent = s.occupied;
+    const status = Object.fromEntries(s.slots.map(x => [x.slot_id, x.occupied]));
+    let route = null;
+    const r = await fetch(`/api/nearest-free?from=${from}`);
+    if (r.ok) route = await r.json();
+    document.getElementById("nearest").textContent = route ? route.slot : "Full";
+    renderMap(document.getElementById("map"), lot, status,
+      { from, highlight: route?.slot, path: route?.path });
+  }
+  tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>

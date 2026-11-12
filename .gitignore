@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+parking.db
+qr/
+config/reference/
+.pytest_cache/
